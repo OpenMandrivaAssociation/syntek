@@ -2,7 +2,7 @@
 %define modname syntek
 
 %if %svn
-%define rel 0.svn%svn.1
+%define rel 0.svn%svn.2
 %else
 %define rel 1
 %endif
