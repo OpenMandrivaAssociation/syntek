@@ -2,7 +2,7 @@
 %define modname syntek
 
 %if %svn
-%define rel 0.svn%svn.2
+%define rel 0.svn%svn.3
 %else
 %define rel 1
 %endif
@@ -20,7 +20,7 @@ Source:		%name.tar.bz2
 Source:		http://prdownloads.sourceforge.net/syntekdriver/%name-%version.tar.bz2
 %endif
 BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
-BuildRequires:	ctags
+Requires:	ctags
 BuildRequires:	doxygen
 BuildRequires:	kernel-source >= 2.6.18
 
