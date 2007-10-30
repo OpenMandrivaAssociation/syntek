@@ -1,26 +1,17 @@
-%define svn	49
-%define modname syntek
+#%%define svn	49
+%define modname stk11xx
 
-%if %svn
-%define rel 0.svn%svn.3
-%else
 %define rel 1
-%endif
 
 Name: 		syntek
-Version: 	1.0.0
-Release: 	%mkrel %rel
+Version: 	1.1.0
+Release: 	%mkrel %{?svn:0.%svn.}%rel
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
 License: 	GPL
 URL:		http://syntekdriver.sourceforge.net/
-%if %svn
-Source:		%name.tar.bz2
-%else
-Source:		http://prdownloads.sourceforge.net/syntekdriver/%name-%version.tar.bz2
-%endif
+Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%version}.tar.gz
 BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
-Requires:	ctags
 BuildRequires:	doxygen
 BuildRequires:	kernel-source >= 2.6.18
 
@@ -31,6 +22,7 @@ Documentation for the syntek USB 2.0 video camera driver for DC-1125 and STK-113
 %package -n dkms-%name
 Summary:	DKMS-ready kernel-source for the Syntek USB Video Camera kernel module
 Group:		System/Configuration/Hardware
+Requires(post):	ctags
 Requires(post):	dkms
 Requires(preun):dkms
 
@@ -39,11 +31,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 
 
 %prep
-%if %svn
-%setup -qn %name
-%else
-%setup -q
-%endif
+%setup -qn %{modname}%{?!svn:-%version}
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
@@ -66,7 +54,7 @@ PACKAGE_VERSION=%version
 # Items below here should not have to change with each driver version
 PACKAGE_NAME=%name
 MAKE[0]="make driver KERNELPATH=${kernel_source_dir}"
-BUILT_MODULE_NAME[0]="stk11xx"
+BUILT_MODULE_NAME[0]="%modname"
 DEST_MODULE_LOCATION[0]="/kernel/3rdparty/%name"
 REMAKE_INITRD="no"
 AUTOINSTALL=yes
