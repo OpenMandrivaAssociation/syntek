@@ -11,6 +11,7 @@ Group: 		System/Configuration/Hardware
 License: 	GPL
 URL:		http://syntekdriver.sourceforge.net/
 Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%version}.tar.gz
+BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
 BuildRequires:	doxygen
 BuildRequires:	kernel-source >= 2.6.18
 
