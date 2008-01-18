@@ -4,7 +4,7 @@
 %define rel 1
 
 Name: 		syntek
-Version: 	1.1.0
+Version: 	1.2.3
 Release: 	%mkrel %{?svn:0.%svn.}%rel
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
@@ -36,7 +36,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
 %build
-%make doc
+%make -f Makefile.standalone doc
 
 %install
 rm -rf %buildroot
