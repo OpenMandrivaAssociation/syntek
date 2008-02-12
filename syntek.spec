@@ -16,7 +16,8 @@ BuildRequires:	doxygen
 BuildRequires:	kernel-source >= 2.6.18
 
 %description
-Documentation for the syntek USB 2.0 video camera driver for DC-1125 and STK-1135
+Documentation for the syntek USB 2.0 video camera driver for DC-1125 and
+STK-1135
 
 
 %package -n dkms-%name
