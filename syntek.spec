@@ -1,10 +1,10 @@
 #%%define svn	49
 %define modname stk11xx
 
-%define rel 2
+%define rel 1
 
 Name: 		syntek
-Version: 	1.2.3
+Version: 	1.3.1
 Release: 	%mkrel %{?svn:0.%svn.}%rel
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
