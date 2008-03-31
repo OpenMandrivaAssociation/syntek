@@ -56,7 +56,6 @@ cat > %buildroot%_usrsrc/%name-%version/dkms.conf << 'EOF'
 PACKAGE_VERSION=%version
 # Items below here should not have to change with each driver version
 PACKAGE_NAME=%name
-MAKE[0]="make driver KERNELPATH=${kernel_source_dir}"
 BUILT_MODULE_NAME[0]="%modname"
 DEST_MODULE_LOCATION[0]="/kernel/3rdparty/%name"
 REMAKE_INITRD="no"
