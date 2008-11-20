@@ -1,7 +1,7 @@
 #%%define svn	49
 %define modname stk11xx
 
-%define rel 4
+%define rel 5
 
 Name: 		syntek
 Version: 	1.3.1
@@ -14,6 +14,7 @@ Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%ver
 Patch0:		stk11xx-1.2.3-drvname.patch
 Patch1:		stk11xx-2.6.27.patch
 Patch2:		stk11xx-ioctl32.patch
+Patch3:		stk11xx-v4l-2.6.27-parent.patch
 BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
 BuildRequires:	doxygen
 
@@ -38,6 +39,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 %patch0 -p1 -b .drvname
 %patch1 -p2 -b .2.6.27
 %patch2 -p2 -b .ioctl32
+%patch3 -p0 -b .parent
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
@@ -52,11 +54,11 @@ install -m644 %_builddir/doxygen/html/* %buildroot%_docdir/%name-%version/html
 install -m644 README %buildroot%_docdir/%name-%version
 
 # DKMS stuff
-mkdir -p -m755 %buildroot%_usrsrc/%name-%version
-cp -a * %buildroot%_usrsrc/%name-%version
+mkdir -p -m755 %buildroot%_usrsrc/%name-%version-%release
+cp -a * %buildroot%_usrsrc/%name-%version-%release
 # Configuration for dkms
-cat > %buildroot%_usrsrc/%name-%version/dkms.conf << 'EOF'
-PACKAGE_VERSION=%version
+cat > %buildroot%_usrsrc/%name-%version-%release/dkms.conf << 'EOF'
+PACKAGE_VERSION=%version-%release
 # Items below here should not have to change with each driver version
 PACKAGE_NAME=%name
 BUILT_MODULE_NAME[0]="%modname"
@@ -67,12 +69,12 @@ EOF
 
 
 %post -n dkms-%name
-dkms add -m %name -v %version --rpm_safe_upgrade || :
-dkms build -m %name -v %version --rpm_safe_upgrade || :
-dkms install -m %name -v %version --rpm_safe_upgrade || :
+dkms add -m %name -v %version-%release --rpm_safe_upgrade || :
+dkms build -m %name -v %version-%release --rpm_safe_upgrade || :
+dkms install -m %name -v %version-%release --rpm_safe_upgrade || :
 
 %preun -n dkms-%name
-dkms remove -m %name -v %version --all --rpm_safe_upgrade || :
+dkms remove -m %name -v %version-%release --all --rpm_safe_upgrade || :
 
 
 %files
@@ -85,8 +87,7 @@ dkms remove -m %name -v %version --all --rpm_safe_upgrade || :
 %files -n dkms-%name
 %defattr(-,root,root)
 %doc README
-%dir %_usrsrc/%name-%version/
-%_usrsrc/%name-%version/*
+%_usrsrc/%name-%version-%release/
 
 
 %clean
