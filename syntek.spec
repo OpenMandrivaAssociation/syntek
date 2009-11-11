@@ -1,20 +1,17 @@
 #%%define svn	49
 %define modname stk11xx
 
-%define rel 6
+%define rel 1
 
 Name: 		syntek
-Version: 	1.3.1
+Version: 	2.1.0
 Release: 	%mkrel %{?svn:0.%svn.}%rel
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
 License: 	GPL
 URL:		http://syntekdriver.sourceforge.net/
 Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%version}.tar.gz
-Patch0:		stk11xx-1.2.3-drvname.patch
-Patch1:		stk11xx-2.6.27.patch
-Patch2:		stk11xx-ioctl32.patch
-Patch3:		stk11xx-v4l-2.6.27-parent.patch
+Patch0:		stk11xx-2.1.0-compat.patch
 BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
 BuildRequires:	doxygen
 
@@ -36,10 +33,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 
 %prep
 %setup -qn %{modname}%{?!svn:-%version}
-%patch0 -p1 -b .drvname
-%patch1 -p2 -b .2.6.27
-%patch2 -p2 -b .ioctl32
-%patch3 -p0 -b .parent
+%patch0 -p1 -b .compat
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
