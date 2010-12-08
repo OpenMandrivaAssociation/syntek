@@ -1,7 +1,7 @@
 #%%define svn	49
 %define modname stk11xx
 
-%define rel 1
+%define rel 2
 
 Name: 		syntek
 Version: 	2.1.0
