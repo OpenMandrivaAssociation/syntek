@@ -14,6 +14,8 @@ Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%ver
 Patch0:		stk11xx-2.1.0-compat.patch
 # mdvbz#62815
 Patch1:		stk11xx-v4l.c.patch
+# mdvbz#62816
+Patch2:		stk11xx-2.1.0-fix-race-conditions.patch
 BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
 BuildRequires:	doxygen
 
@@ -37,6 +39,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 %setup -qn %{modname}%{?!svn:-%version}
 %patch0 -p1 -b .compat~
 %patch1 -p0 -b .62815~
+%patch2 -p0 -b .62816~
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
