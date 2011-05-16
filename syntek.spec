@@ -46,9 +46,6 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 %build
 %make -f Makefile.standalone doc
 
-%install
-rm -rf %buildroot
-
 mkdir -p -m755 %buildroot%_docdir/%name-%version/html
 install -m644 %_builddir/doxygen/html/* %buildroot%_docdir/%name-%version/html
 install -m644 README %buildroot%_docdir/%name-%version
@@ -78,17 +75,11 @@ dkms remove -m %name -v %version-%release --all --rpm_safe_upgrade || :
 
 
 %files
-%defattr(-,root,root)
 %dir %_docdir/%name-%version/
 %doc %_docdir/%name-%version/README
 %dir %_docdir/%name-%version/html/
 %doc %_docdir/%name-%version/html/*
 
 %files -n dkms-%name
-%defattr(-,root,root)
 %doc README
 %_usrsrc/%name-%version-%release/
-
-
-%clean
-rm -rf %buildroot
