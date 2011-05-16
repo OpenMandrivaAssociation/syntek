@@ -15,7 +15,6 @@ Patch1:		stk11xx-v4l.c.patch
 Patch2:		stk11xx-2.1.0-fix-race-conditions.patch
 # mdvbz#62817
 Patch3:		stk11xx-2.1.0-fix-suspend.patch
-BuildRoot: 	%_tmppath/%name-%version-%release-buildroot
 BuildRequires:	doxygen
 
 %description
