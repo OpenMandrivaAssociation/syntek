@@ -17,6 +17,7 @@ Patch2:		stk11xx-2.1.0-fix-race-conditions.patch
 Patch3:		stk11xx-2.1.0-fix-suspend.patch
 # mdvbz#62818
 Patch4:		stk11xx-2.1.0-default-values-and-add-hflip-vlip.patch
+Patch5:		stk11xx-usb.patch
 BuildRequires:	doxygen
 
 %description
@@ -42,6 +43,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 %patch2 -p0 -b .62816~
 %patch3 -p0 -b .62817~
 %patch4 -p1 -b .62818~
+%patch5 -p1 -b .usb~
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
