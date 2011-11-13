@@ -2,7 +2,7 @@
 
 Name: 		syntek
 Version: 	2.1.0
-Release: 	4
+Release: 	5
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
 License: 	GPL
@@ -18,6 +18,7 @@ Patch3:		stk11xx-2.1.0-fix-suspend.patch
 # mdvbz#62818
 Patch4:		stk11xx-2.1.0-default-values-and-add-hflip-vlip.patch
 Patch5:		stk11xx-usb.patch
+Patch6:		stk11xx-2.1.0-drop-v4l1-support.patch
 BuildRequires:	doxygen
 
 %description
@@ -44,6 +45,7 @@ DKMS-ready syntek USB 2.0 video camera driver for DC-1125 and STK-1135
 %patch3 -p0 -b .62817~
 %patch4 -p1 -b .62818~
 %patch5 -p1 -b .usb~
+%patch6 -p1 -b .v4l2~
 #sed -i 's:../doxygen:%buildroot:' doxygen.cfg
 #sed -i 's:CREATE_SUBDIRS         = NO:CREATE_SUBDIRS         = YES:' doxygen.cfg
 
