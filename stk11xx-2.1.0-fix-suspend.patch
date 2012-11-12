@@ -1,0 +1,130 @@
+--- /mnt/clear-data/00-Software-repo/syntekdriver/tags/2.1.0/stk11xx-usb.c	2011-02-26 17:08:18.795544786 +0200
++++ stk11xx-usb.c	2011-03-06 14:12:58.217759189 +0200
+@@ -929,24 +929,30 @@
+ 	v4l_stk11xx_unregister_video_device(dev);
+ }
+ 
+-/*
++#ifdef CONFIG_PM
+ int usb_stk11xx_suspend(struct usb_interface *interface, pm_message_t message)
+ {
+ 	struct usb_stk11xx *dev = usb_get_intfdata(interface);
+ 
+ 	STK_INFO("Syntek USB2.0 Camera Suspend\n");
+ 
+-	// Stop the video stream
+-	dev_stk11xx_stop_stream(dev);
++	mutex_lock(&dev->modlock);
++	if (dev->vopen) {
++		// Stop the video stream
++		dev_stk11xx_stop_stream(dev);
+ 			
+-	// ISOC and URB cleanup
+-	usb_stk11xx_isoc_cleanup(dev);
++		// ISOC and URB cleanup
++		usb_stk11xx_isoc_cleanup(dev);
+ 
+-	// Free memory
+-//	stk11xx_free_buffers(dev);
++		// Free memory
++		//	stk11xx_free_buffers(dev);
+ 
+-	// Switch off the camera
+-	dev_stk11xx_camera_off(dev);
++		// Switch off the camera
++		dev_stk11xx_camera_off(dev);
++
++		dev_stk11xx_camera_asleep(dev);
++	}
++	mutex_unlock(&dev->modlock);
+ 
+ 	return 0;
+ }
+@@ -958,32 +964,38 @@
+ 
+ 	STK_INFO("Syntek USB2.0 Camera Resume\n");
+ 
++	mutex_lock(&dev->modlock);
++
+ 	// Initialize the camera
+ 	dev_stk11xx_initialize_device(dev);
+ 
+-	// Select the new video mode
+-	v4l_stk11xx_select_video_mode(dev, dev->view.x, dev->view.y);
++	if (dev->vopen)
++	{
++		// Select the video mode
++		v4l_stk11xx_select_video_mode(dev, dev->view.x, dev->view.y);
+ 
+-	// Clear the buffers
+-	stk11xx_clear_buffers(dev);
++		// Clear the buffers
++		stk11xx_clear_buffers(dev);
+ 
+-	// Initialize the device
+-	dev_stk11xx_init_camera(dev);
+-	dev_stk11xx_camera_on(dev);
+-	dev_stk11xx_reconf_camera(dev);
++		// Initialize the device
++		dev_stk11xx_init_camera(dev);
++		dev_stk11xx_camera_on(dev);
++		dev_stk11xx_reconf_camera(dev);
+ 
+-	// ISOC and URB init
+-	usb_stk11xx_isoc_init(dev);
++		// ISOC and URB init
++		usb_stk11xx_isoc_init(dev);
+ 
+-	// Start the video stream
+-	dev_stk11xx_start_stream(dev);
++		// Start the video stream
++		dev_stk11xx_start_stream(dev);
+ 
+-	// Video settings
+-	dev_stk11xx_camera_settings(dev);
++		// Video settings
++		dev_stk11xx_camera_settings(dev);
++	}
++	mutex_unlock(&dev->modlock);
+ 
+ 	return 0;
+ }
+-*/
++#endif // CONFIG_PM
+ 
+ 
+ /**
+@@ -996,8 +1008,10 @@
+ 	.probe = usb_stk11xx_probe,
+ 	.disconnect = usb_stk11xx_disconnect,
+ 	.id_table = stk11xx_table,
+-//	.suspend = usb_stk11xx_suspend,
+-//	.resume = usb_stk11xx_resume,
++#ifdef CONFIG_PM
++	.suspend = usb_stk11xx_suspend,
++	.resume = usb_stk11xx_resume,
++#endif
+ };
+ 
+ 
+--- /mnt/clear-data/00-Software-repo/syntekdriver/tags/2.1.0/stk11xx-v4l.c	2011-02-26 17:08:18.798544794 +0200
++++ stk11xx-v4l.c	2011-03-06 14:02:33.154884384 +0200
+@@ -321,7 +322,7 @@
+ 	dev_stk11xx_camera_settings(dev);
+ 
+ 	// Register interface on power management
+-//	usb_autopm_get_interface(dev->interface);
++	usb_autopm_get_interface(dev->interface);
+ 
+ 	dev->vopen++;
+ 	fp->private_data = vdev;
+@@ -367,7 +368,7 @@
+ 	dev_stk11xx_camera_asleep(dev);
+ 
+ 	// Unregister interface on power management
+-//	usb_autopm_put_interface(dev->interface);
++	usb_autopm_put_interface(dev->interface);
+ 
+ 	dev->vopen--;
+ 
+ 

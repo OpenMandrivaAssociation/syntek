@@ -1,0 +1,18 @@
+--- /mnt/clear-data/00-Software-repo/syntekdriver/tags/2.1.0/stk11xx-v4l.c	2011-02-26 17:08:18.798544794 +0200
++++ ./stk11xx-v4l.c	2011-03-06 11:16:30.029303299 +0200
+@@ -266,13 +266,14 @@
+ 		STK_ERROR("Device not initialized !!!\n");
+ 		BUG();
+ 	}
++	mutex_lock(&dev->modlock);
+ 
+ 	if (dev->vopen) {
+ 		STK_DEBUG("Device is busy, someone is using the device\n");
++		mutex_unlock(&dev->modlock);
+ 		return -EBUSY;
+ 	}
+ 
+-	mutex_lock(&dev->modlock);
+ 
+ 	// Allocate memory
+ 	err = stk11xx_allocate_buffers(dev);

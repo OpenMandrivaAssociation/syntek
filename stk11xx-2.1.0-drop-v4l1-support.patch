@@ -1,0 +1,363 @@
+--- stk11xx-2.1.0/stk11xx-sysfs.c.v4l2~	2011-11-13 19:17:56.246164123 +0100
++++ stk11xx-2.1.0/stk11xx-sysfs.c	2011-11-13 19:19:02.179258440 +0100
+@@ -40,7 +40,6 @@
+ #include <linux/kref.h>
+ #include <linux/device.h>
+ #include <linux/mm.h>
+-#include <linux/videodev.h>
+ 
+ 
+ #include <linux/usb.h>
+--- stk11xx-2.1.0/stk11xx-v4l.c.v4l2~	2011-11-13 19:18:08.551554996 +0100
++++ stk11xx-2.1.0/stk11xx-v4l.c	2011-11-13 19:18:40.229561223 +0100
+@@ -40,7 +40,6 @@
+ #include <linux/kref.h>
+ #include <linux/vmalloc.h>
+ #include <linux/mm.h>
+-#include <linux/videodev.h>
+ 
+ 
+ #include <linux/usb.h>
+@@ -645,342 +644,6 @@ static long v4l_stk11xx_do_ioctl(struct
+ #endif
+ 
+ 	switch (cmd) {
+-		// Video 4 Linux v1
+-
+-		case VIDIOCGCAP:
+-			{
+-				struct video_capability *cap = arg;
+-
+-				STK_DEBUG("VIDIOCGCAP\n");
+-
+-				memset(cap, 0, sizeof(*cap));
+-				strlcpy(cap->name, "stk11xx", sizeof(cap->name));
+-				cap->type = VID_TYPE_CAPTURE;
+-				cap->channels = 1;
+-				cap->audios = 0;
+-
+-				switch (dev->webcam_type) {
+-					case STK11XX_SXGA:
+-						cap->minwidth = stk11xx_image_sizes[STK11XX_80x60].x;
+-						cap->minheight = stk11xx_image_sizes[STK11XX_80x60].y;
+-						cap->maxwidth = stk11xx_image_sizes[STK11XX_1280x1024].x;
+-						cap->maxheight = stk11xx_image_sizes[STK11XX_1280x1024].y;
+-						break;
+-
+-					case STK11XX_VGA:
+-						cap->minwidth = stk11xx_image_sizes[STK11XX_80x60].x;
+-						cap->minheight = stk11xx_image_sizes[STK11XX_80x60].y;
+-						cap->maxwidth = stk11xx_image_sizes[STK11XX_640x480].x;
+-						cap->maxheight = stk11xx_image_sizes[STK11XX_640x480].y;
+-						break;
+-				}
+-			}
+-			break;
+-	
+-		case VIDIOCGCHAN:
+-			{
+-			    struct video_channel *v = arg;
+-
+-				STK_DEBUG("VIDIOCGCHAN\n");
+-
+-			    if (v->channel != 0)
+-				    return -EINVAL;
+-			
+-				v->flags = 0;
+-			    v->tuners = 0;
+-			    v->type = VIDEO_TYPE_CAMERA;
+-			    strcpy(v->name, "Webcam");
+-			}
+-			break;
+-
+-		case VIDIOCSCHAN:
+-			{
+-				struct video_channel *v = arg;
+-
+-				STK_DEBUG("VIDIOCSCHAN\n");
+-
+-				if (v->channel != 0)
+-					return -EINVAL;
+-			}
+-			break;
+-
+-		case VIDIOCGPICT:
+-			{
+-				struct video_picture *p = arg;
+-
+-				STK_DEBUG("VIDIOCGPICT\n");
+-
+-				p->brightness = dev->vsettings.brightness;
+-				p->contrast = dev->vsettings.contrast;
+-				p->whiteness = dev->vsettings.whiteness;
+-				p->colour = dev->vsettings.colour;
+-				p->depth = dev->vsettings.depth;
+-				p->palette = dev->vsettings.palette;
+-				p->hue = dev->vsettings.hue;
+-
+-				switch (dev->vsettings.palette) {
+-					case STK11XX_PALETTE_BGR24:
+-						p->palette = VIDEO_PALETTE_RGB24;
+-						break;
+-
+-					case STK11XX_PALETTE_BGR32:
+-                                                p->palette = VIDEO_PALETTE_RGB32;
+-						break;
+-
+-					case STK11XX_PALETTE_UYVY:
+-						p->palette = VIDEO_PALETTE_UYVY;
+-						break;
+-
+-					case STK11XX_PALETTE_YUYV:
+-						p->palette = VIDEO_PALETTE_YUYV;
+-						break;
+-				}
+-			}
+-			break;
+-
+-		case VIDIOCSPICT:
+-			{
+-				struct video_picture *p = arg;
+-
+-				STK_DEBUG("VIDIOCSPICT\n");
+-
+-				dev->vsettings.brightness = p->brightness;
+-				dev->vsettings.contrast = p->contrast;
+-				dev->vsettings.whiteness = p->whiteness;
+-				dev->vsettings.colour = p->colour;
+-				dev->vsettings.hue = p->hue;
+-				
+-				if (p->palette && p->palette != dev->vsettings.palette) {
+-					switch (p->palette) {
+-						case VIDEO_PALETTE_RGB24:
+-							dev->vsettings.depth = 24;
+-							dev->vsettings.palette = STK11XX_PALETTE_BGR24;
+-							break;
+-
+-						case VIDEO_PALETTE_RGB32:
+-							dev->vsettings.depth = 32;
+-							dev->vsettings.palette = STK11XX_PALETTE_BGR32;
+-							break;
+-
+-						case VIDEO_PALETTE_UYVY:
+-							dev->vsettings.depth = 16;
+-							dev->vsettings.palette = STK11XX_PALETTE_UYVY;
+-							break;
+-
+-						case VIDEO_PALETTE_YUYV:
+-							dev->vsettings.depth = 16;
+-							dev->vsettings.palette = STK11XX_PALETTE_YUYV;
+-							break;
+-
+-						default:
+-							return -EINVAL;
+-					}
+-				}
+-
+-				dev_stk11xx_camera_settings(dev);
+-
+-				STK_DEBUG("VIDIOCSPICT done\n");
+-			}
+-			break;
+-
+-		case VIDIOCGWIN:
+-			{
+-				struct video_window *vw = arg;
+-
+-				STK_DEBUG("VIDIOCGWIN\n");
+-
+-				vw->x = 0;
+-				vw->y = 0;
+-				vw->width = dev->view.x;
+-				vw->height = dev->view.y;
+-				vw->chromakey = 0;
+-			}
+-			break;
+-
+-		case VIDIOCSWIN:
+-			{
+-				struct video_window *vw = arg;
+-
+-				STK_DEBUG("VIDIOCSWIN\n");
+-
+-				STK_DEBUG("Set x=%d, y=%d\n", vw->x, vw->y);
+-				STK_DEBUG("Set width=%d, height=%d\n", vw->width, vw->height);
+-				STK_DEBUG("Flags = %X\n", vw->flags);
+-
+-				// Stop the video stream
+-				dev_stk11xx_stop_stream(dev);
+-			
+-				// ISOC and URB cleanup
+-				usb_stk11xx_isoc_cleanup(dev);
+-
+-				// Switch off the camera
+-				dev_stk11xx_camera_off(dev);
+-
+-				dev_stk11xx_camera_asleep(dev);
+-
+-				// Select the new video mode
+-				if (v4l_stk11xx_select_video_mode(dev, vw->width, vw->height)) {
+-					STK_ERROR("Select video mode failed !\n");
+-					return -EAGAIN;
+-				}
+-
+-				// Clear the buffers
+-				stk11xx_clear_buffers(dev);
+-
+-				// Initialize the device
+-				dev_stk11xx_init_camera(dev);
+-				dev_stk11xx_camera_on(dev);
+-				dev_stk11xx_reconf_camera(dev);
+-
+-				// ISOC and URB init
+-				usb_stk11xx_isoc_init(dev);
+-
+-				// Re-start the stream
+-				dev_stk11xx_start_stream(dev);
+-
+-				// Video settings
+-				dev_stk11xx_camera_settings(dev);
+-			}
+-			break;
+-
+-		case VIDIOCGFBUF:
+-			{
+-				struct video_buffer *vb = arg;
+-
+-				STK_DEBUG("VIDIOCGFBUF\n");
+-
+-				memset(vb, 0, sizeof(*vb));
+-			}
+-			break;
+-
+-		case VIDIOCGMBUF:
+-			{
+-				int i;
+-				struct video_mbuf *vm = arg;
+-
+-				STK_DEBUG("VIDIOCGMBUF\n");
+-
+-				memset(vm, 0, sizeof(*vm));
+-
+-				vm->size = dev->nbuffers * dev->len_per_image;
+-				vm->frames = dev->nbuffers;
+-
+-				for (i=0; i<dev->nbuffers; i++)
+-					vm->offsets[i] = i * dev->len_per_image;
+-			}
+-			break;
+-
+-		case VIDIOCMCAPTURE:
+-			{
+-				struct video_mmap *vm = arg;
+-
+-				STK_DEBUG("VIDIOCMCAPTURE format=%d\n", vm->format);
+-
+-				if (vm->frame < 0 || vm->frame >= dev->nbuffers)
+-					return -EINVAL;
+-
+-				if (vm->format) {
+-					switch (vm->format) {
+-						case VIDEO_PALETTE_RGB32:
+-							break;
+-
+-						case VIDEO_PALETTE_RGB24:
+-							break;
+-
+-						case VIDEO_PALETTE_UYVY:
+-							break;
+-
+-						case VIDEO_PALETTE_YUYV:
+-							break;
+-
+-						default:
+-							return -EINVAL;
+-					}
+-				}
+-
+-				if ((vm->width != dev->view.x) || (vm->height != dev->view.y)) 
+-					return -EAGAIN;
+-
+-				if (dev->image_used[vm->frame])
+-					return -EBUSY;
+-
+-				dev->image_used[vm->frame] = 1;
+-
+-				STK_DEBUG("VIDIOCMCAPTURE done\n");
+-			}
+-			break;
+-
+-		case VIDIOCSYNC:
+-			{
+-				int ret;
+-				int *mbuf = arg;
+-
+-				STK_DEBUG("VIDIOCSYNC\n");
+-
+-				if (*mbuf < 0 || *mbuf >= dev->nbuffers)
+-					return -EINVAL;
+-
+-				if (dev->image_used[*mbuf] == 0)
+-					return -EINVAL;
+-
+-				add_wait_queue(&dev->wait_frame, &wait);
+-
+-				while (dev->full_frames == NULL) {
+-					if (dev->error_status) {
+-						remove_wait_queue(&dev->wait_frame, &wait);
+-						set_current_state(TASK_RUNNING);
+-						return -dev->error_status;
+-					}
+-
+-					if (signal_pending(current)) {
+-						remove_wait_queue(&dev->wait_frame, &wait);
+-						set_current_state(TASK_RUNNING);
+-						return -ERESTARTSYS;
+-					}
+-
+-					schedule();
+-					set_current_state(TASK_INTERRUPTIBLE);
+-				}
+-
+-				remove_wait_queue(&dev->wait_frame, &wait);
+-				set_current_state(TASK_RUNNING);
+-
+-				STK_DEBUG("VIDIOCSYNC: frame ready\n");
+-
+-				dev->fill_image = *mbuf;
+-
+-				ret = stk11xx_handle_frame(dev);
+-
+-				if (ret != 0)
+-					STK_ERROR("VIDIOCSYNC error !\n");
+-
+-				dev->image_used[*mbuf] = 0;
+-			}
+-			break;
+-
+-		case VIDIOCGAUDIO:
+-			STK_DEBUG("VIDIOCGAUDIO\n");
+-			return -EINVAL;
+-			break;
+-
+-		case VIDIOCSAUDIO:
+-			STK_DEBUG("VIDIOCSAUDIO\n");
+-			return -EINVAL;
+-			break;
+-
+-		case VIDIOCGUNIT:
+-			{
+-				struct video_unit *vu = arg;
+-
+-				vu->video = dev->vdev->minor & 0x3f;
+-				vu->audio = -1;
+-				vu->vbi = -1;
+-				vu->radio = -1;
+-				vu->teletext = -1;
+-			}
+-			break;
+-
+-
+ 		// Video 4 Linux v2
+ 
+ 		case VIDIOC_QUERYCAP:

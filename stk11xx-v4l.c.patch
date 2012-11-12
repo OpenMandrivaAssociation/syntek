@@ -1,0 +1,172 @@
+--- /mnt/clear-data/00-Software-repo/syntekdriver/tags/2.1.0/stk11xx-v4l.c	2011-02-26 17:08:18.798544794 +0200
++++ ./stk11xx-v4l.c	2011-03-06 00:50:20.314040108 +0200
+@@ -219,7 +219,7 @@
+ 
+ 
+ 	// Calculate the image size
+-	switch (dev->vsettings.palette) {
++        switch (dev->vsettings.palette) {
+ 		case STK11XX_PALETTE_RGB24:
+ 		case STK11XX_PALETTE_BGR24:
+ 			dev->view_size = 3 * dev->view.x * dev->view.y;
+@@ -704,7 +704,7 @@
+ 						break;
+ 
+ 					case STK11XX_PALETTE_BGR32:
+-						p->palette = VIDEO_PALETTE_RGB32;
++                                                p->palette = VIDEO_PALETTE_RGB32;
+ 						break;
+ 
+ 					case STK11XX_PALETTE_UYVY:
+@@ -1181,7 +1181,7 @@
+ 				pix_format.colorspace = V4L2_COLORSPACE_SRGB;
+ 				pix_format.priv = 0;
+ 
+-				switch (dev->vsettings.palette) {
++                                switch (dev->vsettings.palette) {
+ 					case STK11XX_PALETTE_RGB24:
+ 						pix_format.pixelformat = V4L2_PIX_FMT_RGB24;
+ 						pix_format.sizeimage = pix_format.width * pix_format.height * 3;
+@@ -1232,25 +1232,6 @@
+ 				if (fmtd->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+ 					return -EINVAL;
+ 
+-				switch (fmtd->fmt.pix.pixelformat) {
+-					case V4L2_PIX_FMT_RGB24:
+-					case V4L2_PIX_FMT_BGR24:
+-						dev->vsettings.depth = 24;
+-						break;
+-
+-					case V4L2_PIX_FMT_RGB32:
+-					case V4L2_PIX_FMT_BGR32:
+-						dev->vsettings.depth = 32;
+-						break;
+-
+-					case V4L2_PIX_FMT_UYVY:
+-					case V4L2_PIX_FMT_YUYV:
+-						dev->vsettings.depth = 16;
+-						break;
+-
+-					default:
+-						return -EINVAL;
+-				}
+ 
+ 				switch (dev->webcam_type) {
+ 					case STK11XX_SXGA:
+@@ -1277,6 +1258,55 @@
+ 							fmtd->fmt.pix.height = stk11xx_image_sizes[0].y;
+ 						break;
+ 				}
++                                fmtd->fmt.pix.field = V4L2_FIELD_NONE;
++                                fmtd->fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
++                                fmtd->fmt.pix.priv = 0;
++				switch (fmtd->fmt.pix.pixelformat) {
++					case V4L2_PIX_FMT_RGB24:
++						dev->vsettings.depth = 24;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 3;
++                                                fmtd->fmt.pix.bytesperline = 3 * fmtd->fmt.pix.width;
++
++						break;
++
++					case V4L2_PIX_FMT_RGB32:
++						dev->vsettings.depth = 32;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 4;
++                                                fmtd->fmt.pix.bytesperline = 4 * fmtd->fmt.pix.width;
++
++						break;
++
++					case V4L2_PIX_FMT_BGR24:
++						dev->vsettings.depth = 24;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 3;
++                                                fmtd->fmt.pix.bytesperline = 3 * fmtd->fmt.pix.width;
++
++						break;
++
++					case V4L2_PIX_FMT_BGR32:
++						dev->vsettings.depth = 32;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 4;
++                                                fmtd->fmt.pix.bytesperline = 4 * fmtd->fmt.pix.width;
++
++						break;
++
++					case V4L2_PIX_FMT_UYVY:
++						dev->vsettings.depth = 16;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 2;
++                                                fmtd->fmt.pix.bytesperline = 2 * fmtd->fmt.pix.width;
++
++						break;
++
++					case V4L2_PIX_FMT_YUYV:
++						dev->vsettings.depth = 16;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 2;
++                                                fmtd->fmt.pix.bytesperline = 2 * fmtd->fmt.pix.width;
++
++						break;
++
++					default:
++						return -EINVAL;
++				}
+ 
+ 			}
+ 			break;
+@@ -1290,35 +1320,59 @@
+ 				if (fmtd->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+ 					return -EINVAL;
+ 
++                                // need to also set the fields as in G_FMT, conform v4l2 specs
++                                fmtd->fmt.pix.field = V4L2_FIELD_NONE;
++                                fmtd->fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
++                                fmtd->fmt.pix.priv = 0;
++
++
+ 				switch (fmtd->fmt.pix.pixelformat) {
+ 					case V4L2_PIX_FMT_RGB24:
+ 						dev->vsettings.depth = 24;
+-						dev->vsettings.palette = STK11XX_PALETTE_RGB24;
++                                                dev->vsettings.palette = STK11XX_PALETTE_RGB24;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 3;
++                                                fmtd->fmt.pix.bytesperline = 3 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					case V4L2_PIX_FMT_RGB32:
+ 						dev->vsettings.depth = 32;
+ 						dev->vsettings.palette = STK11XX_PALETTE_RGB32;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 4;
++                                                fmtd->fmt.pix.bytesperline = 4 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					case V4L2_PIX_FMT_BGR24:
+ 						dev->vsettings.depth = 24;
+ 						dev->vsettings.palette = STK11XX_PALETTE_BGR24;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 3;
++                                                fmtd->fmt.pix.bytesperline = 3 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					case V4L2_PIX_FMT_BGR32:
+ 						dev->vsettings.depth = 32;
+ 						dev->vsettings.palette = STK11XX_PALETTE_BGR32;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 4;
++                                                fmtd->fmt.pix.bytesperline = 4 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					case V4L2_PIX_FMT_UYVY:
+ 						dev->vsettings.depth = 16;
+ 						dev->vsettings.palette = STK11XX_PALETTE_UYVY;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 2;
++                                                fmtd->fmt.pix.bytesperline = 2 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					case V4L2_PIX_FMT_YUYV:
+ 						dev->vsettings.depth = 16;
+ 						dev->vsettings.palette = STK11XX_PALETTE_YUYV;
++                                                fmtd->fmt.pix.sizeimage = fmtd->fmt.pix.width * fmtd->fmt.pix.height * 2;
++                                                fmtd->fmt.pix.bytesperline = 2 * fmtd->fmt.pix.width;
++
+ 						break;
+ 
+ 					default:

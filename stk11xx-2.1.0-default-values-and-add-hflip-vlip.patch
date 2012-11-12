@@ -1,0 +1,145 @@
+--- stk11xx-2.1.0/stk11xx.h.62818~	2009-03-25 15:13:05.000000000 +0100
++++ stk11xx-2.1.0/stk11xx.h	2011-05-16 15:54:01.109812800 +0200
+@@ -284,6 +284,14 @@ struct stk11xx_video {
+ 	int hue;							/**< Hue setting */
+ 	int hflip;							/**< Horizontal flip */
+ 	int vflip;							/**< Vertical flip */
++
++	// default values for the device. Above are *current* values
++	int default_brightness;
++	int default_contrast;
++	int default_colour;
++	int default_whiteness;
++	int default_hflip;
++	int default_vflip;
+ };
+ 
+ 
+--- stk11xx-2.1.0/stk11xx-usb.c.62818~	2011-05-16 15:53:15.495383060 +0200
++++ stk11xx-2.1.0/stk11xx-usb.c	2011-05-16 15:54:01.109812800 +0200
+@@ -658,6 +658,12 @@ static int usb_stk11xx_default_settings(
+ 			return -1;
+ 	}
+ 
++	dev->vsettings.default_brightness = dev->vsettings.brightness;
++	dev->vsettings.default_whiteness = dev->vsettings.whiteness;
++	dev->vsettings.default_contrast = dev->vsettings.contrast;
++	dev->vsettings.default_colour = dev->vsettings.colour;
++	dev->vsettings.default_hflip = dev->vsettings.hflip;
++	dev->vsettings.default_vflip = dev->vsettings.vflip;
+ 	return 0;
+ }
+ 
+@@ -907,8 +913,6 @@ static void usb_stk11xx_disconnect(struc
+ 
+ 	STK_INFO("Syntek USB2.0 Camera disconnected\n");
+ 
+-	usb_set_intfdata(interface, NULL);
+-
+ 	// We got unplugged; this is signalled by an EPIPE error code
+ 	if (dev->vopen) {
+ 		STK_INFO("Disconnected while webcam is in use !\n");
+@@ -927,6 +931,10 @@ static void usb_stk11xx_disconnect(struc
+ 
+ 	// Unregister the video device
+ 	v4l_stk11xx_unregister_video_device(dev);
++
++	usb_set_intfdata(interface, NULL);
++
++	kfree(dev);
+ }
+ 
+ #ifdef CONFIG_PM
+--- stk11xx-2.1.0/stk11xx-v4l.c.62818~	2011-05-16 15:53:15.496383047 +0200
++++ stk11xx-2.1.0/stk11xx-v4l.c	2011-05-16 15:54:01.118812688 +0200
+@@ -73,6 +73,7 @@ const struct stk11xx_coord stk11xx_image
+ /**
+  * @var stk11xx_controls
+  *   List of all V4Lv2 controls supported by the driver
++ *   default_value field will be overriden at runtime.
+  */
+ static struct v4l2_queryctrl stk11xx_controls[] = {
+ 	{
+@@ -111,6 +112,24 @@ static struct v4l2_queryctrl stk11xx_con
+ 		.step    = 1,
+ 		.default_value = 0x7f00,
+ 	},
++	{
++		.id	= V4L2_CID_HFLIP,
++		.type	= V4L2_CTRL_TYPE_BOOLEAN,
++		.name	= "Flip Horizontally",
++		.minimum        = 0,
++                .maximum        = 1,
++                .step           = 1,
++                .default_value  = 0, // will be actually set later
++	},
++	{
++		.id	= V4L2_CID_VFLIP,
++		.type	= V4L2_CTRL_TYPE_BOOLEAN,
++		.name	= "Flip Vertically",
++		.minimum        = 0,
++                .maximum        = 1,
++                .step           = 1,
++                .default_value  = 0, // will be actually set later
++	}
+ };
+ 
+ 
+@@ -1031,6 +1050,27 @@ static long v4l_stk11xx_do_ioctl(struct
+ 					if (stk11xx_controls[i].id == c->id) {
+ 						STK_DEBUG("VIDIOC_QUERYCTRL found\n");
+ 						memcpy(c, &stk11xx_controls[i], sizeof(struct v4l2_queryctrl));
++						switch(c->id)
++						{
++							case V4L2_CID_BRIGHTNESS:
++								c->default_value = dev->vsettings.default_brightness;
++								break;
++							case V4L2_CID_WHITENESS:
++								c->default_value = dev->vsettings.default_whiteness;
++								break;
++							case V4L2_CID_SATURATION:
++								c->default_value = dev->vsettings.default_colour;
++								break;
++							case V4L2_CID_CONTRAST:
++								c->default_value = dev->vsettings.default_contrast;
++								break;
++							case V4L2_CID_HFLIP:
++								c->default_value = dev->vsettings.default_hflip;
++								break;
++							case V4L2_CID_VFLIP:
++								c->default_value = dev->vsettings.default_vflip;
++								break;
++						}
+ 						break;
+ 					}
+ 				}
+@@ -1063,6 +1103,14 @@ static long v4l_stk11xx_do_ioctl(struct
+ 						c->value = dev->vsettings.contrast;
+ 						break;
+ 
++					case V4L2_CID_HFLIP:
++						c->value = dev->vsettings.hflip;
++						break;
++
++					case V4L2_CID_VFLIP:
++						c->value = dev->vsettings.vflip;
++						break;
++
+ 					default:
+ 						return -EINVAL;
+ 				}
+@@ -1092,6 +1140,14 @@ static long v4l_stk11xx_do_ioctl(struct
+ 						dev->vsettings.contrast = (0xff00 & c->value);
+ 						break;
+ 
++					case V4L2_CID_HFLIP:
++						dev->vsettings.hflip = c->value ? 1: 0;
++						break;
++
++					case V4L2_CID_VFLIP:
++						dev->vsettings.vflip = c->value ? 1: 0;
++						break;
++
+ 					default:
+ 						return -EINVAL;
+ 				}
