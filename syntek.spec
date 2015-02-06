@@ -2,7 +2,7 @@
 
 Name: 		syntek
 Version: 	2.1.0
-Release: 	5
+Release: 	6
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
 License: 	GPL
