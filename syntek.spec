@@ -6,7 +6,7 @@ Release: 	6
 Summary: 	Syntek USB Video Camera driver for DC-1125 and STK-1135
 Group: 		System/Configuration/Hardware
 License: 	GPL
-URL:		http://syntekdriver.sourceforge.net/
+URL:		https://syntekdriver.sourceforge.net/
 Source:		http://prdownloads.sourceforge.net/syntekdriver/%{modname}%{?!svn:-%version}.tar.gz
 Patch0:		stk11xx-2.1.0-compat.patch
 # mdvbz#62815
