@@ -19,6 +19,7 @@ Patch3:		stk11xx-2.1.0-fix-suspend.patch
 Patch4:		stk11xx-2.1.0-default-values-and-add-hflip-vlip.patch
 Patch5:		stk11xx-usb.patch
 Patch6:		stk11xx-2.1.0-drop-v4l1-support.patch
+BuildRequires:	make
 BuildRequires:	doxygen
 
 %description
